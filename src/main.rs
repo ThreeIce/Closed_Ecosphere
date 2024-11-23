@@ -14,6 +14,8 @@ use basic::*;
 use grass_reproduction::*;
 use aging::*;
 use bundle::*;
+use bevy_dev_tools::fps_overlay::{FpsOverlayConfig, FpsOverlayPlugin};
+use bevy::text::FontSmoothing;
 
 fn main() {
     // 输入初始参数
@@ -31,7 +33,22 @@ fn main() {
     let initial_tiger_count: usize = input.trim().parse().unwrap();
     // 初始化 App
     let mut app = App::new();
-    app.add_plugins(DefaultPlugins);
+    app.add_plugins((DefaultPlugins,
+                     FpsOverlayPlugin {
+                         config: FpsOverlayConfig {
+                             text_config: TextFont {
+                                 // Here we define size of our overlay
+                                 font_size: 42.0,
+                                 // If we want, we can use a custom font
+                                 font: default(),
+                                 // We could also disable font smoothing,
+                                 font_smoothing: FontSmoothing::default(),
+                             },
+                             // We can also change color of the overlay
+                             text_color: Color::srgb(0.0, 1.0, 0.0),
+                             enabled: true,
+                         },
+                     },));
     let config = Config::from(
         initial_grass_count,
         initial_cow_count,
