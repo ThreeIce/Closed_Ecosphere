@@ -1,10 +1,10 @@
 use bevy::prelude::*;
 
 #[derive(Component, Deref, DerefMut)]
-struct Age(Timer);
+pub struct Age(Timer);
 
 impl Age{
-    fn from_age(age: f32) -> Self {
+    pub fn from_age(age: f32) -> Self {
         Age(Timer::from_seconds(age, TimerMode::Once))
     }
 }
