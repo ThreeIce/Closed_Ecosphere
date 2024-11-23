@@ -7,7 +7,7 @@ use crate::bundle::*;
 #[derive(Component, Deref, DerefMut)]
 pub struct GrassReproductionTimer(Timer);
 #[derive(Component, Deref, DerefMut)]
-pub struct GrassNeighborCount(usize);
+pub struct GrassNeighborCount(pub usize);
 impl GrassReproductionTimer {
     pub fn from_reproduction_delta(delta: f32) -> Self {
         GrassReproductionTimer(Timer::from_seconds(delta, TimerMode::Repeating))
