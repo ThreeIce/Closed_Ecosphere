@@ -27,7 +27,7 @@ pub fn on_grass_die(
         if let Ok((_,_,mut count)) = query.get_mut(*e){
             count.0 -= 1;
         }else {
-            panic!("Error in on_grass_die, query.get_mut(*e) failed");
+            error!("Error in on_grass_die, query.get_mut(*e) failed");
         }
     });
 }
@@ -44,13 +44,15 @@ pub fn on_grass_birth(
         if let Ok((_,_,mut count)) = query.get_mut(*e){
             count.0 += 1;
         }else {
-            panic!("Error in on_grass_birth, query.get_mut(*e) failed");
+            println!("Error in on_grass_birth, query.get_mut(*e) failed");
+            error!("Error in on_grass_birth, query.get_mut(*e) failed");
         }
     });
     if let Ok((_,_,mut count)) = query.get_mut(trigger.entity()){
         count.0 = neighbor.len();
     }else {
-        panic!("Error in on_grass_birth, query.get_mut(trigger.entity()) failed");
+        println!("Error in on_grass_birth, query.get_mut(trigger.entity()) failed");
+        error!("Error in on_grass_birth, query.get_mut(trigger.entity()) failed");
     }
     index.insert(pos, trigger.entity());
 }
