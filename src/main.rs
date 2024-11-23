@@ -6,6 +6,7 @@ mod grass_reproduction;
 mod aging;
 mod basic;
 mod bundle;
+mod movemement;
 
 use bevy::prelude::*;
 
