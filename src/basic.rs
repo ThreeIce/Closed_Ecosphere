@@ -26,10 +26,8 @@ pub struct Config{
 
 }
 
-impl Config {
-    fn new(grass_shape: Handle<Mesh>,
-              grass_material: Handle<ColorMaterial>
-    ) -> Self {
+impl FromWorld for Config {
+    fn from_world(world: &mut World) -> Self {
         Config {
             grass_health: 1.0,
             grass_age: 10.0,
@@ -38,8 +36,10 @@ impl Config {
             grass_reproduction_rate_2: 0.1,
             grass_reproduction_radius: 10.0,
             grass_gain: 0.1,
-            grass_shape,
-            grass_material,
+            grass_shape: world.get_resource::<Assets<Mesh>>()
+                .unwrap().add(Circle::new(5.0)),
+            grass_material: world.get_resource::<Assets<ColorMaterial>>()
+                .unwrap().add(Color::srgb(0.0,1.0,0.0)),
         }
     }
 }
