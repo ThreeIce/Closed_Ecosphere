@@ -6,6 +6,13 @@ pub struct Health(pub f32);
 
 #[derive(Resource)]
 pub struct Config{
+    // 模拟区域大小
+    pub width: f32,
+    pub height: f32,
+    // 初始参数
+    pub initial_grass_count: usize,
+    pub initial_cow_count: usize,
+    pub initial_tiger_count: usize,
     // For grass
     pub grass_health: f32,
     pub grass_age: f32, // in seconds
@@ -23,22 +30,30 @@ pub struct Config{
     pub grass_shape: Handle<Mesh>,
     // 草的材质
     pub grass_material: Handle<ColorMaterial>,
-
 }
 
-impl FromWorld for Config {
-    fn from_world(world: &mut World) -> Self {
+impl Config {
+    pub fn from(initial_grass_count: usize,
+            initial_cow_count: usize,
+            initial_tiger_count: usize,
+            world: &mut World,
+    ) -> Self {
         Config {
+            width: 4096.0,
+            height: 4096.0,
+            initial_grass_count,
+            initial_cow_count,
+            initial_tiger_count,
             grass_health: 1.0,
-            grass_age: 10.0,
-            grass_reproduction_delta: 10.0,
+            grass_age: 8.0,
+            grass_reproduction_delta: 2.5,
             grass_reproduction_rate_1: 0.5,
             grass_reproduction_rate_2: 0.1,
-            grass_reproduction_radius: 10.0,
+            grass_reproduction_radius: 50.0,
             grass_gain: 0.1,
-            grass_shape: world.get_resource::<Assets<Mesh>>()
+            grass_shape: world.get_resource_mut::<Assets<Mesh>>()
                 .unwrap().add(Circle::new(5.0)),
-            grass_material: world.get_resource::<Assets<ColorMaterial>>()
+            grass_material: world.get_resource_mut::<Assets<ColorMaterial>>()
                 .unwrap().add(Color::srgb(0.0,1.0,0.0)),
         }
     }
