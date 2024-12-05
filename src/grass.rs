@@ -1,8 +1,11 @@
 use bevy::prelude::*;
-use crate::basic::*;
+use crate::health::*;
 use crate::grass_reproduction::*;
 use crate::aging::*;
 use crate::config::*;
+
+#[derive(Component)]
+pub struct Grass;
 
 #[derive(Bundle)]
 pub struct GrassBundle {

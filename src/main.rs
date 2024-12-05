@@ -4,18 +4,17 @@
 
 mod grass_reproduction;
 mod aging;
-mod basic;
-mod bundle;
+mod health;
 mod movemement;
 mod energy;
 mod config;
 mod spatial_index;
+mod grass;
 
 use bevy::prelude::*;
-use basic::*;
 use grass_reproduction::*;
 use aging::*;
-use bundle::*;
+use grass::*;
 use bevy_dev_tools::fps_overlay::{FpsOverlayConfig, FpsOverlayPlugin};
 use bevy::text::FontSmoothing;
 use config::*;
