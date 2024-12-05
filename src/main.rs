@@ -8,6 +8,8 @@ mod basic;
 mod bundle;
 mod movemement;
 mod energy;
+mod config;
+mod spatial_index;
 
 use bevy::prelude::*;
 use basic::*;
@@ -16,6 +18,8 @@ use aging::*;
 use bundle::*;
 use bevy_dev_tools::fps_overlay::{FpsOverlayConfig, FpsOverlayPlugin};
 use bevy::text::FontSmoothing;
+use config::*;
+use crate::spatial_index::*;
 
 fn main() {
     // 输入初始参数

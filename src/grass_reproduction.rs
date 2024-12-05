@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 use crate::basic::*;
 use crate::bundle::*;
+use crate::config::*;
+use crate::spatial_index::*;
 // 草的繁殖
 
 // 繁殖间隔计时器
