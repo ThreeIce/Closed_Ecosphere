@@ -52,6 +52,7 @@ impl Config {
                 .unwrap().add(Circle::new(5.0)),
             grass_material: world.get_resource_mut::<Assets<ColorMaterial>>()
                 .unwrap().add(Color::srgb(0.0,1.0,0.0)),
+            
         }
     }
 }
