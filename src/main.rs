@@ -22,6 +22,11 @@ use grass::*;
 use bevy_dev_tools::fps_overlay::{FpsOverlayConfig, FpsOverlayPlugin};
 use bevy::text::FontSmoothing;
 use config::*;
+use crate::cow::*;
+use crate::cow_agent::*;
+use crate::energy::energy_system;
+use crate::movemement::{index_update, movement_sync, movement_update};
+use crate::prey_agent::*;
 use crate::spatial_index::*;
 
 fn main() {
@@ -62,16 +67,41 @@ fn main() {
         initial_tiger_count,
         &mut app.world_mut());
     // 初始化资源
-    app.insert_resource(config).
-        init_resource::<SpatialIndex<Grass>>()
+    app.insert_resource(config.clone())
+        .init_resource::<SpatialIndex<Grass>>()
+        .init_resource::<SpatialIndex<Cow>>()
+        // 插入捕猎相关资源
+        .insert_resource(Damage::<CowAgent>::new(config.cow_damage))
+        .insert_resource(EnergyGain::<Grass>::new(config.grass_gain))
+        .insert_resource(EnergyGain::<Cow>::new(config.cow_gain))
+        .insert_resource(AttackCoolingTime::<CowAgent>::new(config.cow_attack_cooling_time))
+        .insert_resource(EatingTime::<CowAgent>::new(config.cow_eating_time))
         // 配置 StartUp 系统
         .add_systems(Startup, setup)
         // 配置 Update 系统
-        .add_systems(Update, (
+        .add_systems(FixedUpdate, (
             // aging
             (aging_system),
             // grass reproduction
             (grass_reproduction_system),
+            // energy
+            (energy_system),
+            // Cow Agent
+            (find_prey::<CowAgent,Grass>,
+                attack::<CowAgent,Grass>,),
+            (move_to_prey::<CowAgent,Grass>,
+                on_attack_cooling::<CowAgent>,
+                on_eating::<CowAgent>,)
+                .after(attack::<CowAgent,Grass>)
+                .after(find_prey::<CowAgent,Grass>),
+            ))
+        .add_systems(FixedPostUpdate, (
+            // movement
+            (movement_update),
+            (index_update::<Cow>).after(movement_update),
+            ))
+        .add_systems(Update, (
+            movement_sync,
             ))
         // observers
         // grass reproduction
@@ -95,5 +125,11 @@ fn setup(
         let x = rand::random::<f32>() * config.width - config.width / 2.0;
         let y = rand::random::<f32>() * config.height - config.height / 2.0;
         commands.spawn(GrassBundle::from_config(&config, x, y));
+    }
+    // 在区域范围内随机生成指定数量个牛
+    for _ in 0..config.initial_cow_count {
+        let x = rand::random::<f32>() * config.width - config.width / 2.0;
+        let y = rand::random::<f32>() * config.height - config.height / 2.0;
+        commands.spawn(CowBundle::from_config(&config, x, y));
     }
 }
