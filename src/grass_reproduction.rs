@@ -1,7 +1,7 @@
 use bevy::prelude::*;
-use crate::health::*;
 use crate::grass::*;
 use crate::config::*;
+use crate::movemement::MyPosition;
 use crate::spatial_index::*;
 // 草的繁殖
 
@@ -17,14 +17,13 @@ impl GrassReproductionTimer {
 }
 pub fn on_grass_die(
     trigger: Trigger<OnRemove, GrassNeighborCount>,
-    mut query: Query<(Entity, &Transform,&mut GrassNeighborCount)>,
+    mut query: Query<(Entity, &MyPosition, &mut GrassNeighborCount)>,
     mut index: ResMut<SpatialIndex<Grass>>,
     config: Res<Config>
 ){
-    let pos = query.get(trigger.entity()).unwrap().1.translation.xy();
-    index.remove(pos, trigger.entity());
-    index.get_in_radius(pos, config.grass_reproduction_radius,
-                        query.transmute_lens::<&Transform>().query())
+    let pos = query.get(trigger.entity()).unwrap().1.0;
+    index.remove(trigger.entity());
+    index.get_in_radius(pos, config.grass_reproduction_radius)
         .iter().for_each(|e|{
         if let Ok((_,_,mut count)) = query.get_mut(*e){
             count.0 -= 1;
@@ -35,13 +34,12 @@ pub fn on_grass_die(
 }
 pub fn on_grass_birth(
     trigger: Trigger<OnAdd, GrassNeighborCount>,
-    mut query: Query<(Entity, &Transform,&mut GrassNeighborCount)>,
+    mut query: Query<(Entity, &MyPosition, &mut GrassNeighborCount)>,
     mut index: ResMut<SpatialIndex<Grass>>,
     config: Res<Config>
 ){
-    let pos = query.get(trigger.entity()).unwrap().1.translation.xy();
-    let neighbor = index.get_in_radius(pos, config.grass_reproduction_radius,
-                                       query.transmute_lens::<&Transform>().query());
+    let pos = query.get(trigger.entity()).unwrap().1.0;
+    let neighbor = index.get_in_radius(pos, config.grass_reproduction_radius);
     neighbor.iter().for_each(|e|{
         if let Ok((_,_,mut count)) = query.get_mut(*e){
             count.0 += 1;
@@ -56,7 +54,7 @@ pub fn on_grass_birth(
         println!("Error in on_grass_birth, query.get_mut(trigger.entity()) failed");
         error!("Error in on_grass_birth, query.get_mut(trigger.entity()) failed");
     }
-    index.insert(pos, trigger.entity());
+    index.insert(trigger.entity(), pos);
 }
 // 繁殖系统
 // 如果草周边草的数量小于 3，草会以一阶段概率繁殖，
@@ -66,17 +64,17 @@ pub fn grass_reproduction_system(time: Res<Time>,
                                  config: Res<Config>,
                                  mut query: Query<(&mut GrassReproductionTimer,
                                                    &GrassNeighborCount,
-                                                   &Transform)>,
+                                                   &MyPosition)>,
                                  mut commands: Commands,
 ){
-    for (mut timer, count, transform) in query.iter_mut(){
+    for (mut timer, count, pos) in query.iter_mut(){
         if timer.tick(time.delta()).just_finished(){
             let seed = rand::random::<f32>();
             if (count.0 < 3 && seed < config.grass_reproduction_rate_1)
                 || (count.0 >= 3 && count.0 <= 6 && seed < config.grass_reproduction_rate_2){
                 // 在生成范围内随机选一个点作为生成坐标
-                let x = transform.translation.x + rand::random::<f32>() * 2.0 * config.grass_reproduction_radius - config.grass_reproduction_radius;
-                let y = transform.translation.y + rand::random::<f32>() * 2.0 * config.grass_reproduction_radius - config.grass_reproduction_radius;
+                let x = pos.x + rand::random::<f32>() * 2.0 * config.grass_reproduction_radius - config.grass_reproduction_radius;
+                let y = pos.y + rand::random::<f32>() * 2.0 * config.grass_reproduction_radius - config.grass_reproduction_radius;
                 commands.spawn(GrassBundle::from_config(&config, x, y));
             }
         }

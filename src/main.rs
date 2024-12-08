@@ -10,6 +10,10 @@ mod energy;
 mod config;
 mod spatial_index;
 mod grass;
+mod cow_agent;
+mod cow;
+mod prey_agent;
+mod type_component;
 
 use bevy::prelude::*;
 use grass_reproduction::*;

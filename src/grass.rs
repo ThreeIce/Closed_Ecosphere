@@ -3,9 +3,13 @@ use crate::health::*;
 use crate::grass_reproduction::*;
 use crate::aging::*;
 use crate::config::*;
+use crate::movemement::MyPosition;
+use crate::type_component::TypeComponent;
 
 #[derive(Component)]
 pub struct Grass;
+
+impl TypeComponent for Grass {}
 
 #[derive(Bundle)]
 pub struct GrassBundle {
@@ -19,6 +23,7 @@ pub struct GrassBundle {
     pub mesh_material2d: MeshMaterial2d<ColorMaterial>,
     // 位置
     pub transform: Transform,
+    pub my_pos: MyPosition,
 }
 impl GrassBundle {
     pub fn from_config(config: &Res<Config>, x: f32, y: f32) -> Self {
@@ -31,6 +36,7 @@ impl GrassBundle {
             mesh2d: Mesh2d(config.grass_shape.clone()),
             mesh_material2d: MeshMaterial2d(config.grass_material.clone()),
             transform: Transform::from_xyz(x, y, 0.0),
+            my_pos: MyPosition(Vec2::new(x, y)),
         }
     }
 }
