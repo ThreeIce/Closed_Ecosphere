@@ -1,5 +1,6 @@
 use bevy::prelude::{Component, Entity, Timer, TimerMode};
 use crate::prey_agent::HunterAgent;
+use crate::type_component::TypeComponent;
 
 pub enum CowState
 {
@@ -15,6 +16,9 @@ pub struct CowAgent
     pub timer: Timer,
     pub target: Option<Entity>,
     pub last_energy_gain: f32,
+}
+impl TypeComponent for CowAgent{
+
 }
 impl HunterAgent for CowAgent{
     fn is_idle(&self) -> bool {

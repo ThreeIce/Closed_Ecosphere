@@ -5,14 +5,9 @@ use crate::cow_agent::{CowAgent, CowState};
 use crate::energy::Energy;
 use crate::health::Health;
 use crate::movemement::{Movement, MyPosition};
-use crate::type_component::TypeComponent;
 
-#[derive(Component)]
-pub struct Cow;
-impl TypeComponent for Cow {}
 #[derive(Bundle)]
 pub struct CowBundle {
-    pub cow: Cow,
     pub health: Health,
     pub age: Age,
     // Agent
@@ -29,7 +24,6 @@ pub struct CowBundle {
 impl CowBundle {
     pub fn from_config(config: &Res<Config>, x: f32, y: f32) -> Self {
         CowBundle {
-            cow: Cow,
             health: Health(config.cow_health),
             age: Age::from_age(config.cow_age),
             cow_agent: CowAgent{

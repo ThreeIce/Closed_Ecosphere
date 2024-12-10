@@ -24,11 +24,11 @@ pub trait HunterAgent
     fn get_eating_timer(&mut self) -> &mut Timer;
 }
 #[derive(Resource)]
-pub struct Damage<T: HunterAgent>{
+pub struct Damage<T: TypeComponent>{
     pub damage: f32,
     _marker: std::marker::PhantomData<T>,
 }
-impl<T> Damage<T> where T: HunterAgent
+impl<T> Damage<T> where T: TypeComponent
 {
     pub fn new(damage: f32) -> Self
     {
@@ -54,11 +54,11 @@ impl<T> EnergyGain<T> where T: TypeComponent
     }
 }
 #[derive(Resource)]
-pub struct AttackCoolingTime<T: HunterAgent>{
+pub struct AttackCoolingTime<T: TypeComponent>{
     pub time: f32,
     _marker: std::marker::PhantomData<T>,
 }
-impl<T> AttackCoolingTime<T> where T: HunterAgent
+impl<T> AttackCoolingTime<T> where T: TypeComponent
 {
     pub fn new(time: f32) -> Self
     {
@@ -69,11 +69,11 @@ impl<T> AttackCoolingTime<T> where T: HunterAgent
     }
 }
 #[derive(Resource)]
-pub struct EatingTime<T: HunterAgent>{
+pub struct EatingTime<T: TypeComponent>{
     pub time: f32,
     _marker: std::marker::PhantomData<T>,
 }
-impl<T> EatingTime<T> where T: HunterAgent
+impl<T> EatingTime<T> where T: TypeComponent
 {
     pub fn new(time: f32) -> Self
     {
@@ -158,7 +158,7 @@ pub fn attack<TH,TP>(mut hunter_query: Query<(&mut TH, &MyPosition)>,
                      cooling_time: Res<AttackCoolingTime<TH>>,
                      eating_time: Res<EatingTime<TH>>,
                      mut commands: Commands
-) where TH: Component + HunterAgent, TP: Component + TypeComponent
+) where TH: Component + HunterAgent + TypeComponent, TP: Component + TypeComponent
 {
     hunter_query.iter_mut().for_each(|(mut hunter_agent, hunter_pos)| {
         if hunter_agent.is_hunting()

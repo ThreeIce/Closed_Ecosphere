@@ -69,11 +69,11 @@ fn main() {
     // 初始化资源
     app.insert_resource(config.clone())
         .init_resource::<SpatialIndex<Grass>>()
-        .init_resource::<SpatialIndex<Cow>>()
+        .init_resource::<SpatialIndex<CowAgent>>()
         // 插入捕猎相关资源
         .insert_resource(Damage::<CowAgent>::new(config.cow_damage))
         .insert_resource(EnergyGain::<Grass>::new(config.grass_gain))
-        .insert_resource(EnergyGain::<Cow>::new(config.cow_gain))
+        .insert_resource(EnergyGain::<CowAgent>::new(config.cow_gain))
         .insert_resource(AttackCoolingTime::<CowAgent>::new(config.cow_attack_cooling_time))
         .insert_resource(EatingTime::<CowAgent>::new(config.cow_eating_time))
         // 配置 StartUp 系统
@@ -98,7 +98,7 @@ fn main() {
         .add_systems(FixedPostUpdate, (
             // movement
             (movement_update),
-            (index_update::<Cow>).after(movement_update),
+            (index_update::<CowAgent>).after(movement_update),
             ))
         .add_systems(Update, (
             movement_sync,
