@@ -37,6 +37,9 @@ impl<T: Component + TypeComponent> SpatialIndex<T> {
             );
             if let Some(mines) = self.tile_map.get_mut(&tile) {
                 mines.remove(&entity);
+                if mines.is_empty(){
+                    self.tile_map.remove(&tile);
+                }
             } else {
                 error!("No mines at {:?}", tile);
             }
