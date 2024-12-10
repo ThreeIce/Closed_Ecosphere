@@ -140,10 +140,12 @@ pub fn on_eating<TH>(mut hunter_query: Query<(&mut TH, &mut Energy, &mut Movemen
     });
 }
 
-pub fn find_prey<TH,TP>(mut hunter_query:Query<(&mut TH,&MyPosition)>,
+pub fn find_prey<TH,TP>(mut hunter_query:Query<(&mut TH, &MyPosition, &mut Movement)>,
                         index: Res<SpatialIndex<TP>>) where TH: Component + HunterAgent, TP: Component + TypeComponent
 {
-    hunter_query.iter_mut().for_each(|(mut hunter_agent, hunter_pos)| {
+    hunter_query.iter_mut().for_each(|(mut hunter_agent, hunter_pos, mut movement)| {
+        // 重置速度
+        movement.direction = Vec2::ZERO;
         if hunter_agent.is_idle()
         {
             if let Some(nearby) = index.get_nearest(hunter_pos.0){
