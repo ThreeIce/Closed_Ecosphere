@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use crate::grass::*;
 use crate::config::*;
-use crate::from_config::from_config;
+use crate::from_config::FromConfig;
 use crate::movemement::MyPosition;
 use crate::spatial_index::*;
 // 草的繁殖
@@ -16,7 +16,7 @@ impl GrassReproductionTimer {
         GrassReproductionTimer(Timer::from_seconds(delta, TimerMode::Repeating))
     }
 }
-pub fn on_grass_die(
+pub fn on_grass_death(
     trigger: Trigger<OnRemove, GrassNeighborCount>,
     mut query: Query<(Entity, &MyPosition, &mut GrassNeighborCount)>,
     mut index: ResMut<SpatialIndex<Grass>>,
@@ -29,7 +29,7 @@ pub fn on_grass_die(
         if let Ok((_,_,mut count)) = query.get_mut(*e){
             count.0 -= 1;
         }else {
-            error!("Error in on_grass_die, query.get_mut(*e) failed");
+            error!("Error in on_grass_death, query.get_mut(*e) failed");
         }
     });
 }

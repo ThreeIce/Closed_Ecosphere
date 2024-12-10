@@ -1,5 +1,6 @@
 use bevy::prelude::{Component, Entity, Timer, TimerMode};
 use crate::prey_agent::HunterAgent;
+use crate::reproduction::{ReproductionAgent, ReproductionState};
 use crate::type_component::TypeComponent;
 
 pub enum CowState
@@ -7,7 +8,9 @@ pub enum CowState
     Idle,
     Hunting,
     AttackCooling,
-    Eating
+    Eating,
+    SearchingMate,
+    Mating,
 }
 #[derive(Component)]
 pub struct CowAgent
@@ -85,6 +88,40 @@ impl HunterAgent for CowAgent{
     }
 
     fn get_eating_timer(&mut self) -> &mut Timer {
+        &mut self.timer
+    }
+}
+
+impl ReproductionAgent for CowAgent{
+    fn get_state(&self) -> ReproductionState {
+        match self.state {
+            CowState::Idle => ReproductionState::Idle,
+            CowState::SearchingMate => ReproductionState::SearchingMate,
+            CowState::Mating => ReproductionState::Mating,
+            CowState::Hunting => ReproductionState::OtherCanMate,
+            _ => ReproductionState::OtherCantMate
+        }
+    }
+
+    fn switch_to_idle(&mut self) {
+        self.state = CowState::Idle;
+    }
+
+    fn switch_to_searching_mate(&mut self, mate: Entity) {
+        self.state = CowState::SearchingMate;
+        self.target = Some(mate);
+    }
+
+    fn switch_to_mating(&mut self, mating_time: f32) {
+        self.state = CowState::Mating;
+        self.timer = Timer::from_seconds(mating_time, TimerMode::Once);
+    }
+
+    fn get_mate(&self) -> Option<Entity> {
+        self.target
+    }
+
+    fn get_reproduction_timer(&mut self) -> &mut Timer {
         &mut self.timer
     }
 }

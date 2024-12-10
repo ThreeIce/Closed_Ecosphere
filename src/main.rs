@@ -27,8 +27,10 @@ use config::*;
 use crate::cow::*;
 use crate::cow_agent::*;
 use crate::energy::energy_system;
+use crate::from_config::FromConfig;
 use crate::movemement::{index_update, movement_sync, movement_update};
 use crate::prey_agent::*;
+use crate::reproduction::ReproductionConfig;
 use crate::spatial_index::*;
 
 fn main() {
@@ -78,6 +80,15 @@ fn main() {
         .insert_resource(EnergyGain::<CowAgent>::new(config.cow_gain))
         .insert_resource(AttackCoolingTime::<CowAgent>::new(config.cow_attack_cooling_time))
         .insert_resource(EatingTime::<CowAgent>::new(config.cow_eating_time))
+        // 插入繁殖相关资源
+        .insert_resource(ReproductionConfig::<CowAgent>{
+            energy_threshold: config.cow_energy,
+            energy_cost: config.cow_gain,
+            search_radius: config.width / 2.0,
+            reproduction_distance: 10.0,
+            mating_time: 10.0,
+            _marker: std::marker::PhantomData//TODO:
+        })
         // 配置 StartUp 系统
         .add_systems(Startup, setup)
         // 配置 Update 系统
@@ -106,8 +117,10 @@ fn main() {
             ))
         // observers
         // grass reproduction
-        .add_observer(on_grass_die)
+        .add_observer(on_grass_death)
         .add_observer(on_grass_birth)
+        .add_observer(on_entity_birth::<CowAgent>)
+        .add_observer(on_entity_death::<CowAgent>)
         .run();
 }
 

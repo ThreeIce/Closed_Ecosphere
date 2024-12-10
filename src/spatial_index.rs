@@ -2,6 +2,7 @@ use bevy::log::error;
 use bevy::math::Vec2;
 use bevy::prelude::*;
 use bevy::utils::{HashMap, HashSet};
+use crate::movemement::MyPosition;
 use crate::type_component::TypeComponent;
 
 const CELL_SIZE: f32 = 64.0;
@@ -116,6 +117,9 @@ impl<T: Component + TypeComponent> SpatialIndex<T> {
             self.insert(entity, pos);
         }
     }
+    pub fn get_pos(&self, entity: Entity) -> Option<Vec2> {
+        self.entity_map.get(&entity).copied()
+    }
 }
 impl<T: Component + TypeComponent> Default for SpatialIndex<T>{
     fn default() -> Self {
@@ -125,4 +129,19 @@ impl<T: Component + TypeComponent> Default for SpatialIndex<T>{
             _marker: std::marker::PhantomData,
         }
     }
+}
+pub fn on_entity_birth<T: TypeComponent>(
+    trigger: Trigger<OnAdd, T>,
+    query: Query<(Entity, &MyPosition),With<T>>,
+    mut index: ResMut<SpatialIndex<T>>
+){
+    let pos = query.get(trigger.entity()).unwrap().1.0;
+    index.insert(trigger.entity(), pos);
+}
+
+pub fn on_entity_death<T: TypeComponent>(
+    trigger: Trigger<OnRemove, T>,
+    mut index: ResMut<SpatialIndex<T>>
+){
+    index.remove(trigger.entity());
 }
