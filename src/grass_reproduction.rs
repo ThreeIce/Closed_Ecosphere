@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use crate::grass::*;
 use crate::config::*;
+use crate::from_config::from_config;
 use crate::movemement::MyPosition;
 use crate::spatial_index::*;
 // 草的繁殖

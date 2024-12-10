@@ -3,6 +3,7 @@ use crate::health::*;
 use crate::grass_reproduction::*;
 use crate::aging::*;
 use crate::config::*;
+use crate::from_config::from_config;
 use crate::movemement::MyPosition;
 use crate::type_component::TypeComponent;
 
@@ -25,8 +26,8 @@ pub struct GrassBundle {
     pub transform: Transform,
     pub my_pos: MyPosition,
 }
-impl GrassBundle {
-    pub fn from_config(config: &Res<Config>, x: f32, y: f32) -> Self {
+impl from_config for GrassBundle {
+    fn from_config(config: &Res<Config>, x: f32, y: f32) -> Self {
         GrassBundle {
             grass: Grass,
             health: Health(config.grass_health.clone()),

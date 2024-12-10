@@ -1,5 +1,6 @@
+use bevy::prelude::Component;
 
-pub trait TypeComponent
+pub trait TypeComponent: Component
 {
 
 }

@@ -3,6 +3,7 @@ use crate::aging::Age;
 use crate::config::Config;
 use crate::cow_agent::{CowAgent, CowState};
 use crate::energy::Energy;
+use crate::from_config::from_config;
 use crate::health::Health;
 use crate::movemement::{Movement, MyPosition};
 
@@ -21,8 +22,8 @@ pub struct CowBundle {
     pub my_pos: MyPosition,
     pub movement: Movement,
 }
-impl CowBundle {
-    pub fn from_config(config: &Res<Config>, x: f32, y: f32) -> Self {
+impl from_config for CowBundle {
+    fn from_config(config: &Res<Config>, x: f32, y: f32) -> Self {
         CowBundle {
             health: Health(config.cow_health),
             age: Age::from_age(config.cow_age),

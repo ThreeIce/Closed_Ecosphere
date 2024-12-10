@@ -14,6 +14,8 @@ mod cow_agent;
 mod cow;
 mod prey_agent;
 mod type_component;
+mod reproduction;
+mod from_config;
 
 use bevy::prelude::*;
 use grass_reproduction::*;
