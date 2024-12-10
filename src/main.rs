@@ -79,22 +79,21 @@ fn main() {
         // 配置 StartUp 系统
         .add_systems(Startup, setup)
         // 配置 Update 系统
-        .add_systems(FixedUpdate, (
-            // aging
-            (aging_system),
-            // grass reproduction
-            (grass_reproduction_system),
-            // energy
-            (energy_system),
+        .add_systems(FixedUpdate,
+            // aging, grass reproduction, energy
+            // They can spawn/despawn entity so the must be run before the movement system
+            (aging_system, grass_reproduction_system, energy_system).chain())
+        .add_systems(FixedUpdate,
             // Cow Agent
             (find_prey::<CowAgent,Grass>,
-                attack::<CowAgent,Grass>,),
+                attack::<CowAgent,Grass>,).after(energy_system).after(aging_system))
+        .add_systems(FixedUpdate,
             (move_to_prey::<CowAgent,Grass>,
                 on_attack_cooling::<CowAgent>,
                 on_eating::<CowAgent>,)
                 .after(attack::<CowAgent,Grass>)
                 .after(find_prey::<CowAgent,Grass>),
-            ))
+            )
         .add_systems(FixedPostUpdate, (
             // movement
             (movement_update),

@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use bevy::prelude::*;
 use crate::energy::Energy;
 use crate::health::Health;
@@ -160,26 +161,34 @@ pub fn attack<TH,TP>(mut hunter_query: Query<(&mut TH, &MyPosition)>,
                      mut commands: Commands
 ) where TH: Component + HunterAgent + TypeComponent, TP: Component + TypeComponent
 {
+    let mut to_remove = HashSet::<Entity>::new();
     hunter_query.iter_mut().for_each(|(mut hunter_agent, hunter_pos)| {
         if hunter_agent.is_hunting()
         {
-            if let Ok((prey_pos, mut prey_health)) = prey_query.get_mut(hunter_agent.get_prey().unwrap())
+            let entity = hunter_agent.get_prey().unwrap();
+            if let Ok((prey_pos, mut prey_health)) = prey_query.get_mut(entity)
             {
-                if hunter_pos.0.distance(prey_pos.0) < ATTACK_DISTANCE
-                {
-                    prey_health.0 -= damage.damage;
-                    if prey_health.0 <= 0.0
+                // 检测猎物 entity 是否已经被删除
+                if !to_remove.contains(&entity) {
+                    if hunter_pos.0.distance(prey_pos.0) < ATTACK_DISTANCE
                     {
-                        hunter_agent.switch_to_eating(energy_gain.energy_gain, eating_time.time);
-                        commands.entity(hunter_agent.get_prey().unwrap()).despawn();
-                    }
-                    else {
-                        hunter_agent.switch_to_attack_cooling(cooling_time.time);
+                        prey_health.0 -= damage.damage;
+                        if prey_health.0 <= 0.0
+                        {
+                            hunter_agent.switch_to_eating(energy_gain.energy_gain, eating_time.time);
+                            to_remove.insert(entity);
+
+                        } else {
+                            hunter_agent.switch_to_attack_cooling(cooling_time.time);
+                        }
                     }
                 }
             }
             // 如果猎物不存在了，交由 move_to_prey 捕获并处理，此处不处理
         }
+    });
+    to_remove.iter().for_each(|e| {
+        commands.entity(*e).despawn();
     });
 }
 
