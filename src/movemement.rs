@@ -20,7 +20,7 @@ pub struct MovementBundle {
 // 应该被放在 post fixedupdate 里
 pub fn movement_update(time: Res<Time>, mut query: Query<(&mut MyPosition, &Movement)>) {
     query.par_iter_mut().for_each(|(mut pos, movement)| {
-        if movement.speed != 0.0 {
+        if movement.direction != Vec2::ZERO {
             pos.0 += movement.direction * movement.speed * time.delta_secs();
         }
     });

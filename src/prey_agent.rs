@@ -103,10 +103,13 @@ pub fn move_to_prey<TH,TP>(mut hunter_query: Query<(&mut TH, &mut Movement, &MyP
 }
 
 // State 和 Condition 合并
-pub fn on_attack_cooling<TH>(mut hunter_query: Query<&mut TH>, time: Res<Time>) where TH: Component + HunterAgent
+pub fn on_attack_cooling<TH>(mut hunter_query: Query<(&mut TH, &mut Movement)>, time: Res<Time>) where TH: Component + HunterAgent
 {
-    hunter_query.par_iter_mut().for_each(|mut hunter_agent| {
+    hunter_query.par_iter_mut().for_each(|(mut hunter_agent, mut movement)| {
         if hunter_agent.is_attack_cooling() {
+            if movement.direction != Vec2::ZERO {
+                movement.direction = Vec2::ZERO;
+            }
             let timer = hunter_agent.get_attack_cooling_timer();
             timer.tick(time.delta());
             if timer.just_finished()
@@ -117,11 +120,14 @@ pub fn on_attack_cooling<TH>(mut hunter_query: Query<&mut TH>, time: Res<Time>) 
     });
 }
 
-pub fn on_eating<TH>(mut hunter_query: Query<(&mut TH, &mut Energy)>, time: Res<Time>) where TH: Component + HunterAgent
+pub fn on_eating<TH>(mut hunter_query: Query<(&mut TH, &mut Energy, &mut Movement)>, time: Res<Time>) where TH: Component + HunterAgent
 {
-    hunter_query.par_iter_mut().for_each(|(mut hunter_agent, mut energy)| {
+    hunter_query.par_iter_mut().for_each(|(mut hunter_agent, mut energy, mut movement)| {
         if hunter_agent.is_eating()
         {
+            if movement.direction != Vec2::ZERO {
+                movement.direction = Vec2::ZERO;
+            }
             let timer = hunter_agent.get_eating_timer();
             timer.tick(time.delta());
             if timer.just_finished()
