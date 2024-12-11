@@ -36,7 +36,7 @@ impl FromConfig for CowBundle {
             energy: Energy(config.cow_energy),
             mesh2d: Mesh2d(config.cow_shape.clone()),
             mesh_material2d: MeshMaterial2d(config.cow_material.clone()),
-            transform: Transform::from_xyz(x, y, 0.0),
+            transform: Transform::from_xyz(x, y, 1.0),
             my_pos: MyPosition(Vec2::new(x, y)),
             movement: Movement{
                 speed: config.cow_speed,
