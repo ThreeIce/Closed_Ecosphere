@@ -17,6 +17,7 @@ mod type_component;
 mod reproduction;
 mod from_config;
 mod camera_control;
+mod state_display;
 
 use bevy::prelude::*;
 use grass_reproduction::*;
@@ -34,6 +35,7 @@ use crate::movemement::{index_update, movement_sync, movement_update};
 use crate::prey_agent::*;
 use crate::reproduction::{find_mate_when_energy_enough_and_idle, mating_conditions, reproduction_state_running, searching_mate_conditions, ReproductionConfig};
 use crate::spatial_index::*;
+use crate::state_display::cow_state_display;
 
 fn main() {
     // 输入初始参数
@@ -126,6 +128,7 @@ fn main() {
             movement_sync,
             ))
         .add_systems(Update, camera_control)
+        .add_systems(Update, cow_state_display)
         // observers
         // grass reproduction
         .add_observer(on_grass_death)

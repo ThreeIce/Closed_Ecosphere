@@ -57,8 +57,14 @@ pub struct Config{
     pub cow_mating_time: f32,
     // 牛的模型
     pub cow_shape: Handle<Mesh>,
-    // 牛的材质
-    pub cow_material: Handle<ColorMaterial>,
+    // 动物各状态下颜色
+    pub idle_color: Handle<ColorMaterial>,
+    pub hunting_color: Handle<ColorMaterial>,
+    pub attack_cooling_color: Handle<ColorMaterial>,
+    pub eating_color: Handle<ColorMaterial>,
+    pub searching_mate_color: Handle<ColorMaterial>,
+    pub mating_color: Handle<ColorMaterial>,
+    pub escaping_color: Handle<ColorMaterial>
 }
 
 impl Config {
@@ -101,9 +107,20 @@ impl Config {
             cow_mating_time: 10.0,
             cow_shape: world.get_resource_mut::<Assets<Mesh>>()
                 .unwrap().add(Rectangle::new(20.0, 20.0)),
-            cow_material: world.get_resource_mut::<Assets<ColorMaterial>>()
+            idle_color: world.get_resource_mut::<Assets<ColorMaterial>>()
+                .unwrap().add(Color::srgb(1.0,1.0,1.0)),
+            hunting_color: world.get_resource_mut::<Assets<ColorMaterial>>()
                 .unwrap().add(Color::srgb(0.0,0.0,1.0)),
-
+            attack_cooling_color: world.get_resource_mut::<Assets<ColorMaterial>>()
+                .unwrap().add(Color::srgb(0.0,0.5,1.0)),
+            eating_color: world.get_resource_mut::<Assets<ColorMaterial>>()
+                .unwrap().add(Color::srgb(0.0,1.0,1.0)),
+            searching_mate_color: world.get_resource_mut::<Assets<ColorMaterial>>()
+                .unwrap().add(Color::srgb(0.5,0.0,1.0)),
+            mating_color: world.get_resource_mut::<Assets<ColorMaterial>>()
+                .unwrap().add(Color::srgb(1.0,0.0,1.0)),
+            escaping_color: world.get_resource_mut::<Assets<ColorMaterial>>()
+                .unwrap().add(Color::srgb(1.0,0.5,0.0)),
         }
     }
 }
@@ -132,7 +149,13 @@ impl Clone for Config{
             cow_gain: self.cow_gain,
             cow_damage: self.cow_damage,
             cow_shape: self.cow_shape.clone(),
-            cow_material: self.cow_material.clone(),
+            idle_color: self.idle_color.clone(),
+            hunting_color: self.hunting_color.clone(),
+            attack_cooling_color: self.attack_cooling_color.clone(),
+            eating_color: self.eating_color.clone(),
+            searching_mate_color: self.searching_mate_color.clone(),
+            mating_color: self.mating_color.clone(),
+            escaping_color: self.escaping_color.clone(),
             cow_attack_cooling_time: self.cow_attack_cooling_time,
             cow_eating_time: self.cow_eating_time,
             cow_energy: self.cow_energy,
