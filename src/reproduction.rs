@@ -34,19 +34,19 @@ pub struct ReproductionConfig<T:ReproductionAgent + TypeComponent>{
     // 寻找半径
     pub search_radius: f32,
     // 繁殖距离
-    pub reproduction_distance: f32,
+    pub reproduction_radius: f32,
     // 繁殖所需时间
     pub mating_time: f32,
     pub _marker: std::marker::PhantomData<T>,
 }
 
 impl<T:ReproductionAgent + TypeComponent> ReproductionConfig<T>{
-    pub fn new(energy_threshold: f32, energy_cost: f32, search_radius: f32, reproduction_distance: f32, mating_time: f32) -> Self{
+    pub fn new(energy_threshold: f32, energy_cost: f32, search_radius: f32, reproduction_radius: f32, mating_time: f32) -> Self{
         ReproductionConfig{
             energy_threshold,
             energy_cost,
             search_radius,
-            reproduction_distance,
+            reproduction_radius,
             mating_time,
             _marker: std::marker::PhantomData
         }
@@ -101,7 +101,7 @@ pub fn searching_mate_conditions<T: ReproductionAgent + TypeComponent>(
                     match mate_agent.get_state() {
                         ReproductionState::SearchingMate => {
                             // 切换条件 1：当与配偶进入繁殖距离，双双进入繁殖状态
-                            if pos.0.distance(mate_pos.0) <= reproduction_config.reproduction_distance {
+                            if pos.0.distance(mate_pos.0) <= reproduction_config.reproduction_radius {
                                 agent.switch_to_mating(reproduction_config.mating_time);
                                 mate_agent.switch_to_mating(reproduction_config.mating_time);
                             }
@@ -187,7 +187,7 @@ pub fn mating_conditions<T: ReproductionAgent + TypeComponent, TB: Bundle + From
         }
     });
 }
-pub fn reproduction_state_running<T: ReproductionAgent + TypeComponent, TB: FromConfig>(
+pub fn reproduction_state_running<T: ReproductionAgent + TypeComponent>(
     mut query: Query<(Entity, &T, &mut Movement, &MyPosition)>,
     index: Res<SpatialIndex<T>>,
 ){

@@ -30,7 +30,7 @@ use crate::energy::energy_system;
 use crate::from_config::FromConfig;
 use crate::movemement::{index_update, movement_sync, movement_update};
 use crate::prey_agent::*;
-use crate::reproduction::ReproductionConfig;
+use crate::reproduction::{find_mate_when_energy_enough_and_idle, mating_conditions, reproduction_state_running, searching_mate_conditions, ReproductionConfig};
 use crate::spatial_index::*;
 
 fn main() {
@@ -82,22 +82,21 @@ fn main() {
         .insert_resource(EatingTime::<CowAgent>::new(config.cow_eating_time))
         // 插入繁殖相关资源
         .insert_resource(ReproductionConfig::<CowAgent>{
-            energy_threshold: config.cow_energy,
-            energy_cost: config.cow_gain,
-            search_radius: config.width / 2.0,
-            reproduction_distance: 10.0,
-            mating_time: 10.0,
-            _marker: std::marker::PhantomData//TODO:
+            energy_threshold: config.cow_reproduction_energy_threshold,
+            energy_cost: config.cow_reproduction_cost,
+            search_radius: config.cow_search_radius,
+            reproduction_radius: config.cow_reproduction_radius,
+            mating_time: config.cow_mating_time,
+            _marker: std::marker::PhantomData,
         })
         // 配置 StartUp 系统
         .add_systems(Startup, setup)
         // 配置 Update 系统
         .add_systems(FixedUpdate,
-            // aging, grass reproduction, energy
-            // They can spawn/despawn entity so the must be run before the movement system
+            // aging, grass reproduction, energym
             (aging_system, grass_reproduction_system, energy_system).chain())
+        // Prey Agent
         .add_systems(FixedUpdate,
-            // Cow Agent
             (find_prey::<CowAgent,Grass>,
                 attack::<CowAgent,Grass>,).after(energy_system).after(aging_system))
         .add_systems(FixedUpdate,
@@ -107,6 +106,15 @@ fn main() {
                 .after(attack::<CowAgent,Grass>)
                 .after(find_prey::<CowAgent,Grass>),
             )
+        // Reproduction Agent
+        .add_systems(FixedUpdate,
+                     (find_mate_when_energy_enough_and_idle::<CowAgent>,
+                      searching_mate_conditions::<CowAgent>,
+                      mating_conditions::<CowAgent, CowBundle>).after(energy_system).after(aging_system)) // TODO: 添加了虎的 attack agent 之后，要在这里添加虎的 attack 依赖
+        .add_systems(FixedUpdate, reproduction_state_running::<CowAgent>
+            .after(find_mate_when_energy_enough_and_idle::<CowAgent>)
+            .after(searching_mate_conditions::<CowAgent>)
+            .after(mating_conditions::<CowAgent, CowBundle>))
         .add_systems(FixedPostUpdate, (
             // movement
             (movement_update),

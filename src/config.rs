@@ -42,6 +42,16 @@ pub struct Config{
     pub cow_eating_time: f32,
     // 牛的速度
     pub cow_speed: f32,
+    // 牛的繁殖能量阈值
+    pub cow_reproduction_energy_threshold: f32,
+    // 牛的繁殖能量消耗
+    pub cow_reproduction_cost: f32,
+    // 牛的寻找伴侣半径
+    pub cow_search_radius: f32,
+    // 牛的繁殖半径
+    pub cow_reproduction_radius: f32,
+    // 牛的繁殖时间
+    pub cow_mating_time: f32,
     // 牛的模型
     pub cow_shape: Handle<Mesh>,
     // 牛的材质
@@ -62,27 +72,33 @@ impl Config {
             initial_tiger_count,
             grass_health: 10.0,
             grass_age: 30.0,
-            grass_reproduction_delta: 10.0,
+            grass_reproduction_delta: 8.0,
             grass_reproduction_rate_1: 0.5,
             grass_reproduction_rate_2: 0.1,
             grass_reproduction_radius: 50.0,
-            grass_gain: 5.0,
+            grass_gain: 15.0,
             grass_shape: world.get_resource_mut::<Assets<Mesh>>()
                 .unwrap().add(Circle::new(5.0)),
             grass_material: world.get_resource_mut::<Assets<ColorMaterial>>()
                 .unwrap().add(Color::srgb(0.0,1.0,0.0)),
-            cow_health: 10.0,
+            cow_health: 50.0,
             cow_age: 100.0,
             cow_gain: 50.0,
-            cow_damage: 5.0,
+            cow_damage: 10.0,
             cow_attack_cooling_time: 1.0,
             cow_eating_time: 2.0,
             cow_energy: 50.0,
-            cow_speed: 10.0,
+            cow_speed: 20.0,
+            cow_reproduction_energy_threshold: 120.0,
+            cow_reproduction_cost: 50.0,
+            cow_search_radius: 500.0,
+            cow_reproduction_radius: 40.0,
+            cow_mating_time: 10.0,
             cow_shape: world.get_resource_mut::<Assets<Mesh>>()
                 .unwrap().add(Rectangle::new(20.0, 20.0)),
             cow_material: world.get_resource_mut::<Assets<ColorMaterial>>()
                 .unwrap().add(Color::srgb(0.0,0.0,1.0)),
+
         }
     }
 }
@@ -114,6 +130,11 @@ impl Clone for Config{
             cow_eating_time: self.cow_eating_time,
             cow_energy: self.cow_energy,
             cow_speed: self.cow_speed,
+            cow_reproduction_energy_threshold: self.cow_reproduction_energy_threshold,
+            cow_reproduction_cost: self.cow_reproduction_cost,
+            cow_reproduction_radius: self.cow_reproduction_radius,
+            cow_mating_time: self.cow_mating_time,
+            cow_search_radius: self.cow_search_radius,
         }
     }
 }
