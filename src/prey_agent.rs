@@ -144,10 +144,12 @@ pub fn find_prey<TH,TP>(mut hunter_query:Query<(&mut TH, &MyPosition, &mut Movem
                         index: Res<SpatialIndex<TP>>) where TH: Component + HunterAgent, TP: Component + TypeComponent
 {
     hunter_query.iter_mut().for_each(|(mut hunter_agent, hunter_pos, mut movement)| {
-        // 重置速度
-        movement.direction = Vec2::ZERO;
         if hunter_agent.is_idle()
         {
+            // 重置速度
+            if movement.direction != Vec2::ZERO {
+                movement.direction = Vec2::ZERO;
+            }
             if let Some(nearby) = index.get_nearest(hunter_pos.0){
                 hunter_agent.switch_to_hunting(nearby);
             }

@@ -39,8 +39,16 @@ use crate::state_display::cow_state_display;
 
 fn main() {
     // 输入初始参数
-    println!("Please input the initial count of grass:");
+    println!("Please input the width of the area:");
     let mut input = String::new();
+    std::io::stdin().read_line(&mut input).unwrap();
+    let width: f32 = input.trim().parse().unwrap();
+    println!("Please input the height of the area:");
+    input.clear();
+    std::io::stdin().read_line(&mut input).unwrap();
+    let height: f32 = input.trim().parse().unwrap();
+    println!("Please input the initial count of grass:");
+    input.clear();
     std::io::stdin().read_line(&mut input).unwrap();
     let initial_grass_count: usize = input.trim().parse().unwrap();
     println!("Please input the initial count of cow:");
@@ -70,6 +78,8 @@ fn main() {
                          },
                      },));
     let config = Config::from(
+        width,
+        height,
         initial_grass_count,
         initial_cow_count,
         initial_tiger_count,

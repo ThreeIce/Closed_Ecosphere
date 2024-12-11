@@ -70,7 +70,6 @@ pub fn find_mate_when_energy_enough_and_idle<T: ReproductionAgent + TypeComponen
                         ReproductionState::Idle | ReproductionState::OtherCanMate => {
                             agent.switch_to_searching_mate(mate);
                             mate_agent.switch_to_searching_mate(entity);
-                            break;
                         }
                         _ => {}
                     }

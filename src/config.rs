@@ -68,14 +68,17 @@ pub struct Config{
 }
 
 impl Config {
-    pub fn from(initial_grass_count: usize,
-                initial_cow_count: usize,
-                initial_tiger_count: usize,
-                world: &mut World,
+    pub fn from(
+        width: f32,
+        height: f32,
+        initial_grass_count: usize,
+        initial_cow_count: usize,
+        initial_tiger_count: usize,
+        world: &mut World,
     ) -> Self {
         Config {
-            width: 4096.0,
-            height: 4096.0,
+            width: width,
+            height: height,
             camera_speed: 128.0,
             camera_zoom_speed: 0.2,
             initial_grass_count,

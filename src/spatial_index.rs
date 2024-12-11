@@ -111,10 +111,11 @@ impl<T: Component + TypeComponent> SpatialIndex<T> {
     pub fn update(&mut self, entity: Entity, pos: Vec2) {
         if let Some(old_pos) = self.entity_map.get(&entity) {
             if self.is_moved(*old_pos, pos) {
-                return;
+                self.remove(entity);
+                self.insert(entity, pos);
+            }else{
+                self.entity_map.insert(entity, pos);
             }
-            self.remove(entity);
-            self.insert(entity, pos);
         }
     }
     pub fn get_pos(&self, entity: Entity) -> Option<Vec2> {
