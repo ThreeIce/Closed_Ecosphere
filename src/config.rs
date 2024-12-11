@@ -6,6 +6,9 @@ pub struct Config{
     // 模拟区域大小
     pub width: f32,
     pub height: f32,
+    // 摄像机速度
+    pub camera_speed: f32,
+    pub camera_zoom_speed: f32,
     // 初始参数
     pub initial_grass_count: usize,
     pub initial_cow_count: usize,
@@ -67,6 +70,8 @@ impl Config {
         Config {
             width: 4096.0,
             height: 4096.0,
+            camera_speed: 128.0,
+            camera_zoom_speed: 0.2,
             initial_grass_count,
             initial_cow_count,
             initial_tiger_count,
@@ -108,6 +113,8 @@ impl Clone for Config{
         Config{
             width: self.width,
             height: self.height,
+            camera_speed: self.camera_speed,
+            camera_zoom_speed: self.camera_zoom_speed,
             initial_grass_count: self.initial_grass_count,
             initial_cow_count: self.initial_cow_count,
             initial_tiger_count: self.initial_tiger_count,

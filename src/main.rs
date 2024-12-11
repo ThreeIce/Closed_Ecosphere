@@ -16,6 +16,7 @@ mod prey_agent;
 mod type_component;
 mod reproduction;
 mod from_config;
+mod camera_control;
 
 use bevy::prelude::*;
 use grass_reproduction::*;
@@ -24,6 +25,7 @@ use grass::*;
 use bevy_dev_tools::fps_overlay::{FpsOverlayConfig, FpsOverlayPlugin};
 use bevy::text::FontSmoothing;
 use config::*;
+use crate::camera_control::camera_control;
 use crate::cow::*;
 use crate::cow_agent::*;
 use crate::energy::energy_system;
@@ -123,6 +125,7 @@ fn main() {
         .add_systems(Update, (
             movement_sync,
             ))
+        .add_systems(Update, camera_control)
         // observers
         // grass reproduction
         .add_observer(on_grass_death)
@@ -136,12 +139,10 @@ fn setup(
     mut commands: Commands,
     config: Res<Config>,
 ) {
-    // camera
-    let camera = Camera2dBundle{
-        transform: Transform::from_xyz(0.0, 0.0, 1.0),
-        ..Default::default()
-    };
-    commands.spawn(camera);
+    commands.spawn((
+        Camera2d,
+        Transform::from_xyz(0.0, 0.0, 1.0),
+    ));
     // 在区域范围内随机生成指定数量个草
     for _ in 0..config.initial_grass_count {
         let x = rand::random::<f32>() * config.width - config.width / 2.0;
