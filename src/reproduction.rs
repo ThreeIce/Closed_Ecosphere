@@ -83,49 +83,41 @@ pub fn searching_mate_conditions<T: ReproductionAgent + TypeComponent>(
     mut query: Query<(Entity, &mut T, &MyPosition)>,
     reproduction_config: Res<ReproductionConfig<T>>,
 ) {
-    // 切换条件 1：当与配偶进入繁殖距离，双双进入繁殖状态
-    // 切换条件 2：当配偶不处于寻找配偶状态时，切换到空闲状态
-    // 切换条件 3：当配偶死亡，切换到空闲状态
-    // 对于每一个处于 SearchingMate 状态下的实体，都理应有一个 Mate，因此记录下所有具有 Mate 存活的实体，
-    // 然后再遍历所有处于 SearchingMate 状态下的实体，如果它不在表中，说明它的 Mate 已经死亡。
-    let mut combinations = query.iter_combinations_mut();
-
-    let mut mated_set = std::collections::HashSet::new();
-    while let Some([(entity, mut agent, pos),
-                   (mate, mut mate_agent, mate_pos)]) = combinations.fetch_next()
-    {
-        match agent.get_state() {
+    let mut mating_entities = HashMap::<Entity,Entity>::new();
+    query.iter().for_each(|(entity, agent, _)|{
+        match agent.get_state(){
             ReproductionState::SearchingMate => {
-                if agent.get_mate().unwrap() == mate {
-                    match mate_agent.get_state() {
-                        ReproductionState::SearchingMate => {
-                            // 切换条件 1：当与配偶进入繁殖距离，双双进入繁殖状态
-                            if pos.0.distance(mate_pos.0) <= reproduction_config.reproduction_radius {
-                                agent.switch_to_mating(reproduction_config.mating_time);
-                                mate_agent.switch_to_mating(reproduction_config.mating_time);
-                            }
-                            mated_set.insert(entity);
-                            mated_set.insert(mate);
-                        }
-                        _ => {
-                            // 切换条件 2：当配偶不处于寻找配偶状态时，切换到空闲状态
-                            agent.switch_to_idle();
-                        }
-                    }
-                }
+                mating_entities.insert(entity, agent.get_mate().unwrap());
             }
             _ => {}
         }
-    }
-    query.iter_mut().for_each(|(entity, mut agent, _)| {
-        match agent.get_state() {
-            ReproductionState::SearchingMate => {
-                // 切换条件 3：当配偶死亡，切换到 idle
-                if !mated_set.contains(&entity) {
-                    agent.switch_to_idle();
+    });
+    mating_entities.iter().for_each(|(entity, mate)| {
+        if let Some(mates_mate) = mating_entities.get(mate){
+            if *mates_mate == *entity{
+                let pos2 = query.get(*mate).unwrap().2.0;
+                let (_, mut agent, pos) = query.get_mut(*entity).unwrap();
+                match agent.get_state() {
+                    ReproductionState::SearchingMate => {
+                        if pos.0.distance(pos2) <= reproduction_config.reproduction_radius {
+                            agent.switch_to_mating(reproduction_config.mating_time);
+                            let (_, mut mate_agent, _) = query.get_mut(*mate).unwrap();
+                            mate_agent.switch_to_mating(reproduction_config.mating_time);
+                        }
+                    }
+                    _ => {}
                 }
+            }else{
+                // 显然出错了，双方都处于寻找配偶状态但繁殖对象不是对方
+                panic!("Error in searching_mate_conditions, entity and mate are not each other's mate");
             }
-            _ => {}
+        }
+        else
+        {
+            // 繁殖对象不处于寻找配偶状态或已经死亡，切换到 idle
+            if let Ok((_, mut agent, _)) = query.get_mut(*entity){
+                agent.switch_to_idle();
+            }
         }
     });
 }

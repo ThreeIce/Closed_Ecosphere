@@ -87,8 +87,8 @@ impl Config {
             grass_health: 10.0,
             grass_age: 30.0,
             grass_reproduction_delta: 8.0,
-            grass_reproduction_rate_1: 0.5,
-            grass_reproduction_rate_2: 0.1,
+            grass_reproduction_rate_1: 0.7,
+            grass_reproduction_rate_2: 0.2,
             grass_reproduction_radius: 50.0,
             grass_gain: 15.0,
             grass_shape: world.get_resource_mut::<Assets<Mesh>>()
@@ -103,11 +103,11 @@ impl Config {
             cow_eating_time: 2.0,
             cow_energy: 50.0,
             cow_speed: 20.0,
-            cow_reproduction_energy_threshold: 120.0,
-            cow_reproduction_cost: 50.0,
+            cow_reproduction_energy_threshold: 100.0,
+            cow_reproduction_cost: 40.0,
             cow_search_radius: 500.0,
             cow_reproduction_radius: 40.0,
-            cow_mating_time: 10.0,
+            cow_mating_time: 5.0,
             cow_shape: world.get_resource_mut::<Assets<Mesh>>()
                 .unwrap().add(Rectangle::new(20.0, 20.0)),
             idle_color: world.get_resource_mut::<Assets<ColorMaterial>>()
