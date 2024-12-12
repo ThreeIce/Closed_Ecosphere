@@ -13,7 +13,8 @@ pub struct Config{
     pub initial_grass_count: usize,
     pub initial_cow_count: usize,
     pub initial_tiger_count: usize,
-    // For grass
+
+    // For Grass
     pub grass_health: f32,
     pub grass_age: f32, // in seconds
     // 草的繁殖间隔，按秒
@@ -30,7 +31,8 @@ pub struct Config{
     pub grass_shape: Handle<Mesh>,
     // 草的材质
     pub grass_material: Handle<ColorMaterial>,
-    // For cow
+
+    // For Cow
     pub cow_health: f32,
     pub cow_age: f32, // in seconds
     // 牛初始能量
@@ -57,6 +59,35 @@ pub struct Config{
     pub cow_mating_time: f32,
     // 牛的模型
     pub cow_shape: Handle<Mesh>,
+
+    // For Tiger
+    pub tiger_health: f32,
+    pub tiger_age: f32, // in seconds
+    // 虎初始能量
+    pub tiger_energy: f32,
+    // 虎的捕食收获
+    pub tiger_gain: f32,
+    // 虎的伤害
+    pub tiger_damage: f32,
+    // 虎的攻击冷却时间
+    pub tiger_attack_cooling_time: f32,
+    // 虎的进食时间
+    pub tiger_eating_time: f32,
+    // 虎的速度
+    pub tiger_speed: f32,
+    // 虎的繁殖能量阈值
+    pub tiger_reproduction_energy_threshold: f32,
+    // 虎的繁殖能量消耗
+    pub tiger_reproduction_cost: f32,
+    // 虎的寻找伴侣半径
+    pub tiger_search_radius: f32,
+    // 虎的繁殖半径
+    pub tiger_reproduction_radius: f32,
+    // 虎的繁殖时间
+    pub tiger_mating_time: f32,
+    // 虎的模型
+    pub tiger_shape: Handle<Mesh>,
+
     // 动物各状态下颜色
     pub idle_color: Handle<ColorMaterial>,
     pub hunting_color: Handle<ColorMaterial>,
@@ -110,6 +141,21 @@ impl Config {
             cow_mating_time: 5.0,
             cow_shape: world.get_resource_mut::<Assets<Mesh>>()
                 .unwrap().add(Rectangle::new(20.0, 20.0)),
+            tiger_health: 100.0,
+            tiger_age: 200.0,
+            tiger_gain: 100.0,
+            tiger_damage: 20.0,
+            tiger_attack_cooling_time: 2.0,
+            tiger_eating_time: 5.0,
+            tiger_energy: 100.0,
+            tiger_speed: 40.0,
+            tiger_reproduction_energy_threshold: 200.0,
+            tiger_reproduction_cost: 80.0,
+            tiger_search_radius: 1000.0,
+            tiger_reproduction_radius: 80.0,
+            tiger_mating_time: 10.0,
+            tiger_shape: world.get_resource_mut::<Assets<Mesh>>()
+                .unwrap().add(RegularPolygon::new(20.0, 6)),
             idle_color: world.get_resource_mut::<Assets<ColorMaterial>>()
                 .unwrap().add(Color::srgb(1.0,1.0,1.0)),
             hunting_color: world.get_resource_mut::<Assets<ColorMaterial>>()
@@ -124,50 +170,6 @@ impl Config {
                 .unwrap().add(Color::srgb(1.0,0.0,1.0)),
             escaping_color: world.get_resource_mut::<Assets<ColorMaterial>>()
                 .unwrap().add(Color::srgb(1.0,0.5,0.0)),
-        }
-    }
-}
-
-impl Clone for Config{
-    fn clone(&self) -> Self {
-        Config{
-            width: self.width,
-            height: self.height,
-            camera_speed: self.camera_speed,
-            camera_zoom_speed: self.camera_zoom_speed,
-            initial_grass_count: self.initial_grass_count,
-            initial_cow_count: self.initial_cow_count,
-            initial_tiger_count: self.initial_tiger_count,
-            grass_health: self.grass_health,
-            grass_age: self.grass_age,
-            grass_reproduction_delta: self.grass_reproduction_delta,
-            grass_reproduction_rate_1: self.grass_reproduction_rate_1,
-            grass_reproduction_rate_2: self.grass_reproduction_rate_2,
-            grass_reproduction_radius: self.grass_reproduction_radius,
-            grass_gain: self.grass_gain,
-            grass_shape: self.grass_shape.clone(),
-            grass_material: self.grass_material.clone(),
-            cow_health: self.cow_health,
-            cow_age: self.cow_age,
-            cow_gain: self.cow_gain,
-            cow_damage: self.cow_damage,
-            cow_shape: self.cow_shape.clone(),
-            idle_color: self.idle_color.clone(),
-            hunting_color: self.hunting_color.clone(),
-            attack_cooling_color: self.attack_cooling_color.clone(),
-            eating_color: self.eating_color.clone(),
-            searching_mate_color: self.searching_mate_color.clone(),
-            mating_color: self.mating_color.clone(),
-            escaping_color: self.escaping_color.clone(),
-            cow_attack_cooling_time: self.cow_attack_cooling_time,
-            cow_eating_time: self.cow_eating_time,
-            cow_energy: self.cow_energy,
-            cow_speed: self.cow_speed,
-            cow_reproduction_energy_threshold: self.cow_reproduction_energy_threshold,
-            cow_reproduction_cost: self.cow_reproduction_cost,
-            cow_reproduction_radius: self.cow_reproduction_radius,
-            cow_mating_time: self.cow_mating_time,
-            cow_search_radius: self.cow_search_radius,
         }
     }
 }

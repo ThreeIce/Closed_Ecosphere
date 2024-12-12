@@ -6,7 +6,7 @@ use crate::movemement::{Movement, MyPosition};
 use crate::spatial_index::SpatialIndex;
 use crate::type_component::TypeComponent;
 
-const ATTACK_DISTANCE: f32 = 1.0;
+const ATTACK_DISTANCE: f32 = 10.0;
 
 pub trait HunterAgent
 {
