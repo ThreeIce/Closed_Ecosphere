@@ -188,9 +188,14 @@ pub fn reproduction_state_running<T: ReproductionAgent + TypeComponent>(
             ReproductionState::SearchingMate => {
                 // 寻找配偶状态下，不断更新配偶位置
                 let mate = agent.get_mate().unwrap();
-                // 这段代码假定条件检查系统已经运行过，如果 mate 死亡或切换状态，则遍历到的实体已经被切换为 idle。并且在条件检查系统到本系统之间没有任何其他系统改过 mate 的状态，或杀死 mate。
-                let mate_pos = index.get_pos(mate).unwrap();
-                movement.direction = (mate_pos - pos.0).normalize();
+                // 配偶可能会刚好在状态机条件检查完，这段代码开始运行前被虎杀死，如果这种情况发生，不作为，由下一帧的状态机条件检查系统来处理。
+                if let Some(mate_pos) = index.get_pos(mate) {
+                    movement.direction = (mate_pos - pos.0).normalize();
+                }
+                else
+                {
+                    movement.direction = Vec2::ZERO;
+                }
             }
             ReproductionState::Mating => {
                 if movement.direction != Vec2::ZERO {
