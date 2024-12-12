@@ -6,7 +6,7 @@ use crate::from_config::FromConfig;
 use crate::movemement::{Movement, MyPosition};
 use crate::spatial_index::SpatialIndex;
 use crate::type_component::TypeComponent;
-
+// TODO: 修复繁殖闪烁问题
 pub enum ReproductionState{
     Idle,
     SearchingMate,

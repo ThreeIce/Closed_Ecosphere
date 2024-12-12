@@ -57,6 +57,8 @@ pub struct Config{
     pub cow_reproduction_radius: f32,
     // 牛的繁殖时间
     pub cow_mating_time: f32,
+    // 牛的逃跑检测半径
+    pub cow_escape_radius: f32,
     // 牛的模型
     pub cow_shape: Handle<Mesh>,
 
@@ -139,6 +141,7 @@ impl Config {
             cow_search_radius: 500.0,
             cow_reproduction_radius: 40.0,
             cow_mating_time: 5.0,
+            cow_escape_radius: 100.0,
             cow_shape: world.get_resource_mut::<Assets<Mesh>>()
                 .unwrap().add(Rectangle::new(20.0, 20.0)),
             tiger_health: 100.0,

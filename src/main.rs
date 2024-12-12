@@ -20,6 +20,7 @@ mod camera_control;
 mod state_display;
 mod tiger_agent;
 mod tiger;
+mod escape_system;
 
 use bevy::prelude::*;
 use grass_reproduction::*;
@@ -32,6 +33,7 @@ use crate::camera_control::camera_control;
 use crate::cow::*;
 use crate::cow_agent::*;
 use crate::energy::energy_system;
+use crate::escape_system::{escape_from, EscapeConfig};
 use crate::from_config::FromConfig;
 use crate::movemement::{index_update, movement_sync, movement_update};
 use crate::prey_agent::*;
@@ -102,6 +104,11 @@ fn main() {
         .insert_resource(AttackCoolingTime::<TigerAgent>::new(config.tiger_attack_cooling_time))
         .insert_resource(EatingTime::<CowAgent>::new(config.cow_eating_time))
         .insert_resource(EatingTime::<TigerAgent>::new(config.tiger_eating_time))
+        // 插入逃跑相关资源
+        .insert_resource(EscapeConfig::<CowAgent>{
+            flee_distance: config.cow_escape_radius,
+            _marker: Default::default(),
+        })
         // 插入繁殖相关资源
         .insert_resource(ReproductionConfig::<CowAgent>{
             energy_threshold: config.cow_reproduction_energy_threshold,
@@ -126,13 +133,16 @@ fn main() {
         .add_systems(FixedUpdate,
             // aging, grass reproduction, energym
             (aging_system, grass_reproduction_system, energy_system).chain())
+        // 牛的逃跑系统
+        .add_systems(FixedUpdate,escape_from::<CowAgent,TigerAgent>)
         // Prey Agent
         // 牛
         .add_systems(FixedUpdate,
             (find_prey::<CowAgent,Grass>,
                 attack::<CowAgent,Grass>,)
                 .after(energy_system)
-                .after(aging_system))
+                .after(aging_system)
+                .after(escape_from::<CowAgent,TigerAgent>))
         .add_systems(FixedUpdate, (
             move_to_prey::<CowAgent,Grass>,
             on_attack_cooling::<CowAgent>,
@@ -160,7 +170,8 @@ fn main() {
             searching_mate_conditions::<CowAgent>,
             mating_conditions::<CowAgent, CowBundle>)
             .after(energy_system)
-            .after(aging_system))
+            .after(aging_system)
+            .after(escape_from::<CowAgent,TigerAgent>))
         .add_systems(FixedUpdate, reproduction_state_running::<CowAgent>
             .after(find_mate_when_energy_enough_and_idle::<CowAgent>)
             .after(searching_mate_conditions::<CowAgent>)

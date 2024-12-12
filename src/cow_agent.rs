@@ -1,4 +1,5 @@
 use bevy::prelude::{Component, Entity, Timer, TimerMode};
+use crate::escape_system::{EscapeAgent, EscapeState};
 use crate::prey_agent::HunterAgent;
 use crate::reproduction::{ReproductionAgent, ReproductionState};
 use crate::type_component::TypeComponent;
@@ -11,6 +12,7 @@ pub enum CowState
     Eating,
     SearchingMate,
     Mating,
+    Fleeing
 }
 #[derive(Component)]
 pub struct CowAgent
@@ -123,5 +125,27 @@ impl ReproductionAgent for CowAgent{
 
     fn get_reproduction_timer(&mut self) -> &mut Timer {
         &mut self.timer
+    }
+}
+
+impl EscapeAgent for CowAgent{
+    fn get_state(&self) -> EscapeState {
+        match self.state {
+            CowState::Fleeing => EscapeState::Fleeing,
+            CowState::Idle |
+            CowState::Hunting |
+            CowState::SearchingMate |
+            CowState::Mating |
+            CowState::Eating => EscapeState::CanFlee,
+            _ => EscapeState::CantFlee
+        }
+    }
+
+    fn switch_to_fleeing(&mut self) {
+        self.state = CowState::Fleeing;
+    }
+
+    fn switch_to_idle(&mut self) {
+        self.state = CowState::Idle;
     }
 }

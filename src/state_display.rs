@@ -27,6 +27,9 @@ pub fn cow_state_display(
             CowState::Mating => {
                 mesh_material2d.0 = config.mating_color.clone();
             }
+            CowState::Fleeing => {
+                mesh_material2d.0 = config.escaping_color.clone();
+            }
         }
     });
 }
