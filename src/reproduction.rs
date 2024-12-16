@@ -1,12 +1,15 @@
 use bevy::prelude::*;
+use bevy::reflect::Map;
 use bevy::utils::{HashMap};
 use crate::config::Config;
 use crate::energy::Energy;
 use crate::from_config::FromConfig;
 use crate::movemement::{Movement, MyPosition};
-use crate::spatial_index::SpatialIndex;
+use crate::spatial_index::{euclidean, SpatialIndex};
 use crate::type_component::TypeComponent;
-// TODO: 修复繁殖闪烁问题
+use kdtree;
+use kdtree::KdTree;
+
 pub enum ReproductionState{
     Idle,
     SearchingMate,
@@ -56,26 +59,35 @@ pub fn find_mate_when_energy_enough_and_idle<T: ReproductionAgent + TypeComponen
     mut query: Query<(Entity, &mut T, &Energy, &MyPosition)>,
     reproduction_config: Res<ReproductionConfig<T>>,
 ){
-    let mut combinations = query.iter_combinations_mut();
-    while let Some([(entity, mut agent, energy, pos),
-                   (mate, mut mate_agent, mate_energy, mate_pos)]) = combinations.fetch_next()
-    {
-        match agent.get_state() {
-            ReproductionState::Idle => {
-                // 切换条件 1：当能量足够时，尝试寻找配偶
-                if energy.0 >= reproduction_config.energy_threshold
-                    && mate_energy.0 >= reproduction_config.energy_threshold
-                    && pos.0.distance(mate_pos.0) <= reproduction_config.search_radius {
-                    match mate_agent.get_state() {
-                        ReproductionState::Idle | ReproductionState::OtherCanMate => {
-                            agent.switch_to_searching_mate(mate);
-                            mate_agent.switch_to_searching_mate(entity);
-                        }
-                        _ => {}
-                    }
+    let mut entities_map = HashMap::<Entity, Vec2>::new();
+    query.iter().for_each(|(entity, agent, energy, pos)|{
+        match agent.get_state(){
+            ReproductionState::Idle|ReproductionState::OtherCanMate => {
+                if energy.0 >= reproduction_config.energy_threshold{
+                    entities_map.insert(entity, pos.0);
                 }
             }
             _ => {}
+        }
+    });
+    let mut kdtree = KdTree::with_capacity(2, entities_map.len());
+    for (entity, pos) in entities_map.iter() {
+        kdtree.add([pos.x, pos.y], *entity).unwrap()
+    }
+    while entities_map.len() > 1{ //只有一个，没有找伴的意义
+        let (&entity, &pos) = entities_map.iter().next().unwrap();
+        // 先移除自身，避免在搜索最近点时获取的是自身
+        kdtree.remove(&[pos.x, pos.y], &entity).unwrap();
+        entities_map.remove(&entity);
+        let (distance, &nearest_entity) = kdtree.nearest(&[pos.x, pos.y], 1, &euclidean).unwrap()[0];
+        if distance <= reproduction_config.search_radius{
+            let (_, mut agent, _, _) = query.get_mut(entity).unwrap();
+            agent.switch_to_searching_mate(nearest_entity);
+            let (_, mut mate_agent, _, _) = query.get_mut(nearest_entity).unwrap();
+            mate_agent.switch_to_searching_mate(entity);
+            let mate_pos = entities_map.get(&nearest_entity).unwrap();
+            kdtree.remove(&[mate_pos.x, mate_pos.y], &nearest_entity).unwrap();
+            entities_map.remove(&nearest_entity);
         }
     }
 }
@@ -183,7 +195,7 @@ pub fn reproduction_state_running<T: ReproductionAgent + TypeComponent>(
     index: Res<SpatialIndex<T>>,
 ){
     // 状态运行
-    query.par_iter_mut().for_each(|(_, agent, mut movement, pos)| {
+    query.par_iter_mut().for_each(|(entity, agent, mut movement, pos)| {
         match agent.get_state() {
             ReproductionState::SearchingMate => {
                 // 寻找配偶状态下，不断更新配偶位置
