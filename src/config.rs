@@ -97,7 +97,9 @@ pub struct Config{
     pub eating_color: Handle<ColorMaterial>,
     pub searching_mate_color: Handle<ColorMaterial>,
     pub mating_color: Handle<ColorMaterial>,
-    pub escaping_color: Handle<ColorMaterial>
+    pub escaping_color: Handle<ColorMaterial>,
+
+    pub escape_update_delta_secs: f32
 }
 
 impl Config {
@@ -173,6 +175,8 @@ impl Config {
                 .unwrap().add(Color::srgb(1.0,0.0,1.0)),
             escaping_color: world.get_resource_mut::<Assets<ColorMaterial>>()
                 .unwrap().add(Color::srgb(1.0,0.5,0.0)),
+
+            escape_update_delta_secs: 1.0
         }
     }
 }

@@ -33,7 +33,7 @@ use crate::camera_control::camera_control;
 use crate::cow::*;
 use crate::cow_agent::*;
 use crate::energy::energy_system;
-use crate::escape_system::{escape_from, EscapeConfig};
+use crate::escape_system::{escape_from, EscapeConfig, EscapeTimer};
 use crate::from_config::FromConfig;
 use crate::movemement::{index_update, movement_sync, movement_update};
 use crate::prey_agent::*;
@@ -126,6 +126,7 @@ fn main() {
             mating_time: config.tiger_mating_time,
             _marker: std::marker::PhantomData,
         })
+        .insert_resource(EscapeTimer::new(config.escape_update_delta_secs))
         .insert_resource(config)
         // 配置 StartUp 系统
         .add_systems(Startup, setup)
