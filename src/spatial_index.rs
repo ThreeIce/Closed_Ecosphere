@@ -1,122 +1,69 @@
-use bevy::log::error;
+use std::collections::HashMap;
 use bevy::math::Vec2;
 use bevy::prelude::*;
-use bevy::utils::{HashMap, HashSet};
 use crate::movemement::MyPosition;
 use crate::type_component::TypeComponent;
+use kdtree::KdTree;
+use num_traits::Float;
 
-const CELL_SIZE: f32 = 64.0;
+pub fn euclidean<T: Float>(a: &[T], b: &[T]) -> T {
+    debug_assert_eq!(a.len(), b.len());
+    a.iter()
+        .zip(b.iter())
+        .map(|(x, y)| ((*x) - (*y)) * ((*x) - (*y)))
+        .fold(T::zero(), ::std::ops::Add::add)
+        .sqrt()
+}
 
 #[derive(Resource)]
 pub struct SpatialIndex<T: Component + TypeComponent> {
-    tile_map: HashMap<(i32, i32), HashSet<Entity>>,
+    kd_tree: KdTree<f32, Entity, [f32;2]>,
     entity_map: HashMap<Entity, Vec2>,
     _marker: std::marker::PhantomData<T>,
 }
 
 impl<T: Component + TypeComponent> SpatialIndex<T> {
-    pub fn get_nearby(&self, pos: Vec2, max_tile: i32) -> Vec<Entity> {
-        let tile = (
-            (pos.x / CELL_SIZE).floor() as i32,
-            (pos.y / CELL_SIZE).floor() as i32,
-        );
-        let mut nearby = Vec::new();
-        for x in -max_tile..max_tile +1 {
-            for y in -max_tile..max_tile +1 {
-                if let Some(mines) = self.tile_map.get(&(tile.0 + x, tile.1 + y)) {
-                    nearby.extend(mines.iter());
-                }
-            }
-        }
-        nearby
-    }
     pub fn remove(&mut self, entity: Entity) {
-        if let Some(pos) = self.entity_map.remove(&entity) {
-            let tile = (
-                (pos.x / CELL_SIZE).floor() as i32,
-                (pos.y / CELL_SIZE).floor() as i32,
-            );
-            if let Some(mines) = self.tile_map.get_mut(&tile) {
-                mines.remove(&entity);
-                if mines.is_empty(){
-                    self.tile_map.remove(&tile);
-                }
-            } else {
-                error!("No mines at {:?}", tile);
-            }
-        }else{
-            error!("No position for entity {:?}", entity);
-        }
+        self.kd_tree.remove(&self.entity_map[&entity].into(), &entity).unwrap();
+        self.entity_map.remove(&entity).unwrap();
     }
     pub fn insert(&mut self, entity: Entity, pos: Vec2) {
-        let tile = (
-            (pos.x / CELL_SIZE).floor() as i32,
-            (pos.y / CELL_SIZE).floor() as i32,
-        );
-        self.tile_map.entry(tile).or_default().insert(entity);
+        self.kd_tree.add([pos.x, pos.y], entity).unwrap();
         self.entity_map.insert(entity, pos);
     }
-    pub fn is_moved(&self, old_pos: Vec2, new_pos: Vec2) -> bool {
-        (old_pos.x / CELL_SIZE).floor() as i32 != (new_pos.x / CELL_SIZE).floor() as i32
-            || (old_pos.y / CELL_SIZE).floor() as i32 != (new_pos.y / CELL_SIZE).floor() as i32
+    pub fn get_in_radius(&self, pos: Vec2, radius: f32) -> Vec<(f32,&Entity)> {
+        self.kd_tree.within(&[pos.x, pos.y], radius, &euclidean).unwrap_or_else(|e| {
+            panic!("Error in get_in_radius: {:?}", e);
+        })
     }
-    pub fn get_in_radius(&self, pos: Vec2, radius: f32) -> Vec<Entity> {
-        // 向上取整
-        let mut nearby = self.get_nearby(pos, (radius / CELL_SIZE).ceil() as i32);
-        nearby.retain(|e| {
-            if let Some(entity_pos) = self.entity_map.get(e) {
-                entity_pos.distance(pos) < radius
-            } else {
-                error!("Error in get_in_radius, query.get(*e) failed");
-                false
-            }
+    pub fn get_nearest(&self, pos: Vec2) -> Option<(f32,&Entity)> {
+        let nearest = self.kd_tree.nearest(&[pos.x, pos.y], 1, &euclidean).unwrap_or_else(|e| {
+            panic!("Error in get_nearest: {:?}", e);
         });
-        nearby
-    }
-    pub fn get_nearest(&self, pos: Vec2) -> Option<Entity> {
-        if self.tile_map.is_empty() {
-            return None;
-        }
-        let nearby = self.get_nearby(pos, 2);
-        let mut min_distance = f32::MAX;
-        let mut nearest = None;
-        if !nearby.is_empty() {
-            for e in nearby {
-                if let Some(entity_pos) = self.entity_map.get(&e) {
-                    let distance = entity_pos.distance(pos);
-                    if distance < min_distance {
-                        min_distance = distance;
-                        nearest = Some(e);
-                    }
-                } else {
-                    error!("Error in get_nearest, query.get(*e) failed");
-                }
-            }
-            nearest
+        if nearest.len() > 0 {
+            Some(nearest[0])
         } else {
-            for e in self.tile_map.values().flatten() {
-                if let Some(entity_pos) = self.entity_map.get(e) {
-                    let distance = entity_pos.distance(pos);
-                    if distance < min_distance {
-                        min_distance = distance;
-                        nearest = Some(*e);
-                    }
-                } else {
-                    error!("Error in get_nearest, query.get(*e) failed");
-                }
-            }
-            nearest
+            None
+        }
+    }
+    ///
+    /// 若 index 内包含了实体自身，通过这个方法获得第二近的实体
+    ///
+    pub fn get_second_nearest(&self, pos: Vec2) -> Option<(f32,&Entity)> {
+        let nearest = self.kd_tree.nearest(&[pos.x, pos.y], 2, &euclidean).unwrap_or_else(|e| {
+            panic!("Error in get_second_nearest: {:?}", e);
+        });
+        if nearest.len() > 1 {
+            Some(nearest[1])
+        } else {
+            None
         }
     }
     pub fn update(&mut self, entity: Entity, pos: Vec2) {
-        if let Some(old_pos) = self.entity_map.get(&entity) {
-            if self.is_moved(*old_pos, pos) {
-                self.remove(entity);
-                self.insert(entity, pos);
-            }else{
-                self.entity_map.insert(entity, pos);
-            }
-        }
+        let old_pos = self.entity_map.get(&entity).unwrap();
+        self.kd_tree.remove(&[old_pos.x,old_pos.y], &entity).unwrap();
+        self.kd_tree.add([pos.x, pos.y], entity).unwrap();
+        self.entity_map.insert(entity, pos);
     }
     pub fn get_pos(&self, entity: Entity) -> Option<Vec2> {
         self.entity_map.get(&entity).copied()
@@ -125,7 +72,7 @@ impl<T: Component + TypeComponent> SpatialIndex<T> {
 impl<T: Component + TypeComponent> Default for SpatialIndex<T>{
     fn default() -> Self {
         SpatialIndex {
-            tile_map: HashMap::default(),
+            kd_tree: KdTree::new(2),
             entity_map: HashMap::default(),
             _marker: std::marker::PhantomData,
         }

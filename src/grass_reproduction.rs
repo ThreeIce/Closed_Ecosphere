@@ -25,7 +25,7 @@ pub fn on_grass_death(
     let pos = query.get(trigger.entity()).unwrap().1.0;
     index.remove(trigger.entity());
     index.get_in_radius(pos, config.grass_reproduction_radius)
-        .iter().for_each(|e|{
+        .iter().for_each(|&(_, e)|{
         if let Ok((_,_,mut count)) = query.get_mut(*e){
             count.0 -= 1;
         }else {
@@ -41,7 +41,7 @@ pub fn on_grass_birth(
 ){
     let pos = query.get(trigger.entity()).unwrap().1.0;
     let neighbor = index.get_in_radius(pos, config.grass_reproduction_radius);
-    neighbor.iter().for_each(|e|{
+    neighbor.iter().for_each(|&(_, e)|{
         if let Ok((_,_,mut count)) = query.get_mut(*e){
             count.0 += 1;
         }else {

@@ -150,7 +150,7 @@ pub fn find_prey<TH,TP>(mut hunter_query:Query<(&mut TH, &MyPosition, &mut Movem
             if movement.direction != Vec2::ZERO {
                 movement.direction = Vec2::ZERO;
             }
-            if let Some(nearby) = index.get_nearest(hunter_pos.0){
+            if let Some((_, &nearby)) = index.get_nearest(hunter_pos.0){
                 hunter_agent.switch_to_hunting(nearby);
             }
         }

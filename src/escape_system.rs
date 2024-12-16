@@ -30,7 +30,7 @@ pub fn escape_from<TP: EscapeAgent + TypeComponent, TH: TypeComponent>(
             EscapeState::CanFlee => {
                 if !hunter.is_empty() {
                     agent.switch_to_fleeing();
-                    let hunter_pos = hunter_index.get_pos(hunter[0]).unwrap();
+                    let hunter_pos = hunter_index.get_pos(*hunter[0].1).unwrap();
                     movement.direction = (pos.0 - hunter_pos).normalize();
                 }
             }
@@ -39,7 +39,7 @@ pub fn escape_from<TP: EscapeAgent + TypeComponent, TH: TypeComponent>(
                     agent.switch_to_idle();
                     movement.direction = Vec2::ZERO;
                 }else{
-                    let hunter_pos = hunter_index.get_pos(hunter[0]).unwrap();
+                    let hunter_pos = hunter_index.get_pos(*hunter[0].1).unwrap();
                     movement.direction = (pos.0 - hunter_pos).normalize();
                 }
             }

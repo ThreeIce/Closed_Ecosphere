@@ -26,7 +26,7 @@ pub fn movement_update(time: Res<Time>, mut query: Query<(&mut MyPosition, &Move
     });
 }
 // 应该被放在 post fixedupdate 里并严格置于 movement_update 之后
-pub fn index_update<T: Component + TypeComponent>(query: Query<(Entity, &MyPosition), Changed<MyPosition>>, mut index: ResMut<SpatialIndex<T>>) {
+pub fn index_update<T: Component + TypeComponent>(query: Query<(Entity, &MyPosition), (With<T>,Changed<MyPosition>)>, mut index: ResMut<SpatialIndex<T>>) {
     query.iter().for_each(|(entity, pos)| {
         index.update(entity, pos.0);
     });
