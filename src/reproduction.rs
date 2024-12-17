@@ -54,25 +54,38 @@ impl<T:ReproductionAgent + TypeComponent> ReproductionConfig<T>{
         }
     }
 }
+#[derive(Deref, DerefMut)]
+pub struct FindMateEntitiesMapCache(HashMap<Entity, Vec2>);
+impl Default for FindMateEntitiesMapCache {
+    fn default() -> Self{
+        FindMateEntitiesMapCache(HashMap::default())
+    }
+}
+#[derive(Deref, DerefMut)]
+pub struct FindMateKdTreeCache(KdTree<f32, Entity, [f32; 2]>);
+impl Default for FindMateKdTreeCache {
+    fn default() -> Self{
+        FindMateKdTreeCache(KdTree::new(2))
+    }
+}
+
 pub fn find_mate_when_energy_enough_and_idle<T: ReproductionAgent + TypeComponent>(
     mut query: Query<(Entity, &mut T, &Energy, &MyPosition)>,
     reproduction_config: Res<ReproductionConfig<T>>,
+    mut entities_map: Local<FindMateEntitiesMapCache>,
+    mut kdtree: Local<FindMateKdTreeCache>
 ){
-    let mut entities_map = HashMap::<Entity, Vec2>::new();
     query.iter().for_each(|(entity, agent, energy, pos)|{
         match agent.get_state(){
             ReproductionState::Idle|ReproductionState::OtherCanMate => {
                 if energy.0 >= reproduction_config.energy_threshold{
                     entities_map.insert(entity, pos.0);
+                    kdtree.add([pos.0.x, pos.0.y], entity).unwrap();
                 }
             }
             _ => {}
         }
     });
-    let mut kdtree = KdTree::with_capacity(2, entities_map.len());
-    for (entity, pos) in entities_map.iter() {
-        kdtree.add([pos.x, pos.y], *entity).unwrap()
-    }
     while entities_map.len() > 1{ //只有一个，没有找伴的意义
         let (&entity, &pos) = entities_map.iter().next().unwrap();
         // 先移除自身，避免在搜索最近点时获取的是自身
@@ -89,12 +102,25 @@ pub fn find_mate_when_energy_enough_and_idle<T: ReproductionAgent + TypeComponen
             entities_map.remove(&nearest_entity);
         }
     }
+    if entities_map.len() == 1{
+        let (entity, pos) = entities_map.iter().next().unwrap();
+        kdtree.remove(&[pos.x, pos.y], entity).unwrap();
+        entities_map.clear();
+    }
+}
+
+#[derive(Deref, DerefMut)]
+pub struct SearchingMateMatingEntitiesCache(HashMap<Entity, Entity>);
+impl Default for SearchingMateMatingEntitiesCache{
+    fn default() -> Self{
+        SearchingMateMatingEntitiesCache(HashMap::default())
+    }
 }
 pub fn searching_mate_conditions<T: ReproductionAgent + TypeComponent>(
     mut query: Query<(Entity, &mut T, &MyPosition)>,
     reproduction_config: Res<ReproductionConfig<T>>,
+    mut mating_entities: Local<SearchingMateMatingEntitiesCache>
 ) {
-    let mut mating_entities = HashMap::<Entity,Entity>::new();
     query.iter().for_each(|(entity, agent, _)|{
         match agent.get_state(){
             ReproductionState::SearchingMate => {
@@ -131,15 +157,25 @@ pub fn searching_mate_conditions<T: ReproductionAgent + TypeComponent>(
             }
         }
     });
+    mating_entities.clear();
 }
+
+#[derive(Deref, DerefMut)]
+pub struct MatingEntitiesCache(HashMap<Entity, Entity>);
+impl Default for MatingEntitiesCache{
+    fn default() -> Self{
+        MatingEntitiesCache(HashMap::default())
+    }
+}
+
 pub fn mating_conditions<T: ReproductionAgent + TypeComponent, TB: Bundle + FromConfig>(
     mut query: Query<(Entity, &mut T, &mut Energy, &MyPosition)>,
     time: Res<Time>,
     mut commands: Commands,
     reproduction_config: Res<ReproductionConfig<T>>,
-    app_config: Res<Config>
+    app_config: Res<Config>,
+    mut mating_entities: Local<MatingEntitiesCache>
 ){
-    let mut mating_entities = HashMap::<Entity,Entity>::new();
     query.iter().for_each(|(entity, agent, _, _)|{
         match agent.get_state(){
             ReproductionState::Mating => {
@@ -188,6 +224,7 @@ pub fn mating_conditions<T: ReproductionAgent + TypeComponent, TB: Bundle + From
             }
         }
     });
+    mating_entities.clear();
 }
 pub fn reproduction_state_running<T: ReproductionAgent + TypeComponent>(
     mut query: Query<(Entity, &T, &mut Movement, &MyPosition)>,
