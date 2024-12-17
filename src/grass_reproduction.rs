@@ -66,9 +66,9 @@ pub fn grass_reproduction_system(time: Res<Time>,
                                  mut query: Query<(&mut GrassReproductionTimer,
                                                    &GrassNeighborCount,
                                                    &MyPosition)>,
-                                 mut commands: Commands,
+                                 par_commands: ParallelCommands,
 ){
-    for (mut timer, count, pos) in query.iter_mut(){
+    query.par_iter_mut().for_each(|(mut timer, count, pos)|{
         if timer.tick(time.delta()).just_finished(){
             let seed = rand::random::<f32>();
             if (count.0 < 3 && seed < config.grass_reproduction_rate_1)
@@ -76,8 +76,10 @@ pub fn grass_reproduction_system(time: Res<Time>,
                 // 在生成范围内随机选一个点作为生成坐标
                 let x = pos.x + rand::random::<f32>() * 2.0 * config.grass_reproduction_radius - config.grass_reproduction_radius;
                 let y = pos.y + rand::random::<f32>() * 2.0 * config.grass_reproduction_radius - config.grass_reproduction_radius;
-                commands.spawn(GrassBundle::from_config(&config, x, y));
+                par_commands.command_scope(|mut commands|{
+                    commands.spawn(GrassBundle::from_config(&config, x, y));
+                });
             }
         }
-    }
+    });
 }

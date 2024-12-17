@@ -133,7 +133,9 @@ fn main() {
         // 配置 Update 系统
         .add_systems(FixedUpdate,
             // aging, grass reproduction, energym
-            (aging_system, grass_reproduction_system, energy_system).chain())
+            (aging_system, energy_system).chain())
+        // 草的繁殖系统
+        .add_systems(FixedUpdate,grass_reproduction_system)
         // 牛的逃跑系统
         .add_systems(FixedUpdate,escape_from::<CowAgent,TigerAgent>)
         // Prey Agent

@@ -37,7 +37,7 @@ pub fn escape_from<TP: EscapeAgent + TypeComponent, TH: TypeComponent>(
     mut timer: ResMut<EscapeTimer>
 ){
     if timer.tick(time.delta()).just_finished() {
-        query.iter_mut().for_each(|(mut movement, mut agent, pos)| {
+        query.par_iter_mut().for_each(|(mut movement, mut agent, pos)| {
             let hunter = hunter_index.get_in_radius(pos.0, config.flee_distance);
             match agent.get_state() {
                 EscapeState::CanFlee => {

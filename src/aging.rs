@@ -11,10 +11,12 @@ impl Age{
 
 pub fn aging_system(time: Res<Time>,
                     mut query: Query<(Entity, &mut Age)>,
-                    mut commands: Commands){
-    for (entity, mut age) in &mut query {
+                    par_commands: ParallelCommands){
+    query.par_iter_mut().for_each(|(entity, mut age)| {
         if age.tick(time.delta()).just_finished() {
-            commands.entity(entity).despawn_recursive();
+            par_commands.command_scope(|mut commands| {
+                commands.entity(entity).despawn_recursive();
+            });
         }
-    }
+    });
 }

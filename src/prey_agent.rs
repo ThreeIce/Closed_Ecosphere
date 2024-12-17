@@ -87,7 +87,7 @@ impl<T> EatingTime<T> where T: TypeComponent
 pub fn move_to_prey<TH,TP>(mut hunter_query: Query<(&mut TH, &mut Movement, &MyPosition)>,
                            prey_query: Query<(&TP, &MyPosition)>) where TH: Component + HunterAgent, TP: Component + TypeComponent
 {
-    hunter_query.iter_mut().for_each(|(mut hunter_agent, mut movement, hunter_pos)| {
+    hunter_query.par_iter_mut().for_each(|(mut hunter_agent, mut movement, hunter_pos)| {
         if hunter_agent.is_hunting()
         {
             if let Ok((_, prey_pos)) = prey_query.get(hunter_agent.get_prey().unwrap())
@@ -143,7 +143,7 @@ pub fn on_eating<TH>(mut hunter_query: Query<(&mut TH, &mut Energy, &mut Movemen
 pub fn find_prey<TH,TP>(mut hunter_query:Query<(&mut TH, &MyPosition, &mut Movement)>,
                         index: Res<SpatialIndex<TP>>) where TH: Component + HunterAgent, TP: Component + TypeComponent
 {
-    hunter_query.iter_mut().for_each(|(mut hunter_agent, hunter_pos, mut movement)| {
+    hunter_query.par_iter_mut().for_each(|(mut hunter_agent, hunter_pos, mut movement)| {
         if hunter_agent.is_idle()
         {
             // 重置速度

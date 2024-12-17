@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bevy::reflect::Map;
 use bevy::utils::{HashMap};
 use crate::config::Config;
 use crate::energy::Energy;
@@ -195,7 +194,7 @@ pub fn reproduction_state_running<T: ReproductionAgent + TypeComponent>(
     index: Res<SpatialIndex<T>>,
 ){
     // 状态运行
-    query.par_iter_mut().for_each(|(entity, agent, mut movement, pos)| {
+    query.par_iter_mut().for_each(|(_, agent, mut movement, pos)| {
         match agent.get_state() {
             ReproductionState::SearchingMate => {
                 // 寻找配偶状态下，不断更新配偶位置
